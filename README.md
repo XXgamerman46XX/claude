@@ -25,7 +25,8 @@ Requirements: a Mac with **Xcode 16 or newer**, an iPhone on **iOS 17+**, and a 
 1. Clone this repo on your Mac and open `DeepcoreMiner/DeepcoreMiner.xcodeproj`.
 2. Click the **DeepcoreMiner** project in the sidebar, then the **DeepcoreMiner** target, then **Signing & Capabilities**:
    - **Team**: pick your Apple ID. If none is listed, add it under Xcode → Settings → Accounts. A free account works.
-   - **Bundle Identifier**: change `com.CHANGEME.deepcoreminer` to something unique, e.g. `com.yourname.deepcoreminer`.
+   - Team and Bundle Identifier (`com.nicholaswilder.deepcoreminer`) are already set for the owner's Personal Team. Anyone else should pick their own team and a unique bundle ID.
+   - A free Apple ID allows only 3 of your own apps on a phone at once; delete one if the install fails with "maximum number of installed apps".
 3. Plug in the iPhone and pick it as the run destination at the top of Xcode.
 4. On the iPhone, turn on Settings → Privacy & Security → **Developer Mode** (the phone restarts).
 5. Press **Run** (▶). The first time, the phone may ask you to trust the developer: Settings → General → VPN & Device Management.

@@ -84,6 +84,27 @@ struct MineView: View {
                     .allowsHitTesting(false)
 
                 VStack {
+                    HStack {
+                        Spacer()
+                        Button {
+                            game.setAutoTap(enabled: !core.autoTapEnabled)
+                        } label: {
+                            Label(core.autoTapEnabled ? "AUTO \(Int(core.autoTapRate))/s" : "AUTO",
+                                  systemImage: core.autoTapEnabled ? "hand.tap.fill" : "hand.tap")
+                                .font(.caption.bold())
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(core.autoTapEnabled ? Color.cyan.opacity(0.85) : Color.black.opacity(0.45),
+                                            in: Capsule())
+                                .foregroundStyle(core.autoTapEnabled ? Color.black : Color.white)
+                        }
+                        .accessibilityLabel(core.autoTapEnabled ? "Turn auto clicker off" : "Turn auto clicker on")
+                    }
+                    Spacer()
+                }
+                .padding(10)
+
+                VStack {
                     if let t = game.toast {
                         ToastView(toast: t)
                             .transition(.move(edge: .top).combined(with: .opacity))

@@ -36,6 +36,9 @@ enum Balance {
     static let shardBonusEach = 0.05     // +5% damage & value per shard
     static let relicMultiplier = 1.45    // x1.45 damage & value per first-time boss kill (permanent)
 
+    // MARK: Auto clicker (only runs while the app is open)
+    static let autoTapRates: [Double] = [1, 2, 5, 10, 20]   // taps per second
+
     // MARK: Offline
     static let offlineCapSeconds: Double = 16 * 3600
     static let offlineEfficiency = 0.75

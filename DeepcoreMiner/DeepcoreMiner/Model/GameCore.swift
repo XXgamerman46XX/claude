@@ -45,6 +45,8 @@ struct GameCore: Codable {
 
     // Settings
     var autoChallenge: Bool = true
+    var autoTapEnabled: Bool = false
+    var autoTapRate: Double = 5      // taps per second
     var lastSaved: Date = Date()
 
     init() {}
@@ -71,6 +73,9 @@ struct GameCore: Codable {
         playSeconds = try c.decodeIfPresent(Double.self, forKey: .playSeconds) ?? d.playSeconds
         coreReached = try c.decodeIfPresent(Bool.self, forKey: .coreReached) ?? d.coreReached
         autoChallenge = try c.decodeIfPresent(Bool.self, forKey: .autoChallenge) ?? d.autoChallenge
+        autoTapEnabled = try c.decodeIfPresent(Bool.self, forKey: .autoTapEnabled) ?? d.autoTapEnabled
+        autoTapRate = try c.decodeIfPresent(Double.self, forKey: .autoTapRate) ?? d.autoTapRate
+        if !Balance.autoTapRates.contains(autoTapRate) { autoTapRate = d.autoTapRate }
         lastSaved = try c.decodeIfPresent(Date.self, forKey: .lastSaved) ?? d.lastSaved
         if blockRarity < 0 || blockRarity > 2 { blockRarity = 0 }
     }
@@ -109,8 +114,9 @@ struct GameCore: Codable {
 
     // MARK: Actions
 
-    mutating func tap() -> [GameEvent] {
-        totalTaps += 1
+    /// A tap from your finger (`manual`) or from the auto clicker.
+    mutating func tap(manual: Bool = true) -> [GameEvent] {
+        if manual { totalTaps += 1 }
         let crit = Double.random(in: 0..<1) < critChance
         let dmg = tapDamage * (crit ? Balance.critMultiplier : 1)
         return [.hit(amount: dmg, crit: crit)] + applyDamage(dmg)

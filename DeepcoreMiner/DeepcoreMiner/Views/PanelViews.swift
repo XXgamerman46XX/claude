@@ -16,12 +16,50 @@ struct UpgradesView: View {
             .pickerStyle(.segmented)
             ScrollView {
                 VStack(spacing: 8) {
+                    AutoClickerCard()
                     ForEach(UpgradeKind.allCases) { kind in
                         UpgradeRow(kind: kind, buyMode: buyMode)
                     }
                 }
             }
         }
+    }
+}
+
+struct AutoClickerCard: View {
+    @EnvironmentObject var game: GameModel
+
+    var body: some View {
+        let core = game.core
+        VStack(alignment: .leading, spacing: 8) {
+            Toggle(isOn: Binding(get: { game.core.autoTapEnabled },
+                                 set: { game.setAutoTap(enabled: $0) })) {
+                HStack(spacing: 10) {
+                    Image(systemName: "hand.tap.fill")
+                        .font(.title3)
+                        .frame(width: 40, height: 40)
+                        .background(Circle().fill(Color.cyan.opacity(0.25)))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Auto Clicker").font(.subheadline.bold())
+                        Text(core.autoTapEnabled
+                             ? "\(Fmt.num(core.tapDamage * core.autoTapRate)) dmg / sec"
+                             : "Taps for you while the game is open")
+                            .font(.caption)
+                            .foregroundStyle(core.autoTapEnabled ? Color.cyan : Color.secondary)
+                    }
+                }
+            }
+            .tint(.cyan)
+            Picker("Taps per second", selection: Binding(get: { game.core.autoTapRate },
+                                                         set: { game.setAutoTap(rate: $0) })) {
+                ForEach(Balance.autoTapRates, id: \.self) { rate in
+                    Text("\(Int(rate))/s").tag(rate)
+                }
+            }
+            .pickerStyle(.segmented)
+        }
+        .padding(10)
+        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 14))
     }
 }
 

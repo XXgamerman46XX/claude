@@ -26,6 +26,8 @@ final class GameModel: ObservableObject {
 
     private var timer: Timer?
     private var saveCountdown = 0.0
+    private var autoTapCarry = 0.0
+    private var autoPulseCount = 0
     private let saveKey = "deepcore.save.v1"
     private let haptics = Haptics()
     private let tickInterval = 0.1
@@ -51,6 +53,33 @@ final class GameModel: ObservableObject {
 
     func buy(_ kind: UpgradeKind, count: Int) {
         if core.buy(kind, count: count) > 0 { haptics.tap() }
+    }
+
+    func setAutoTap(enabled: Bool) {
+        core.autoTapEnabled = enabled
+        autoTapCarry = 0
+        haptics.tap()
+    }
+
+    func setAutoTap(rate: Double) {
+        core.autoTapRate = rate
+    }
+
+    /// Fires the auto clicker's taps for this tick. Fractional taps carry over,
+    /// so 1, 2, 5, 10 and 20 taps/sec are all exact over time.
+    private func runAutoClicker() {
+        guard core.autoTapEnabled else { return }
+        autoTapCarry += core.autoTapRate * tickInterval
+        var events: [GameEvent] = []
+        while autoTapCarry >= 1 {
+            autoTapCarry -= 1
+            events += core.tap(manual: false)
+        }
+        if !events.isEmpty {
+            autoPulseCount &+= 1
+            if autoPulseCount % 2 == 0 { tapPulse &+= 1 }
+            handle(events, fromTap: false)
+        }
     }
 
     func challengeBoss() {
@@ -86,6 +115,7 @@ final class GameModel: ObservableObject {
     private func step() {
         let events = core.tick(dt: tickInterval)
         if !events.isEmpty { handle(events, fromTap: false) }
+        runAutoClicker()
         saveCountdown += tickInterval
         if saveCountdown >= 15 {
             saveCountdown = 0
@@ -131,8 +161,11 @@ final class GameModel: ObservableObject {
         for e in events {
             switch e {
             case let .hit(amount, crit):
-                addFloater(text: (crit ? "CRIT " : "") + Fmt.num(amount),
-                           color: crit ? .yellow : .white, big: crit)
+                // Auto clicker hits only show a number now and then, so the screen stays readable.
+                if fromTap || floaters.count < 3 {
+                    addFloater(text: (crit ? "CRIT " : "") + Fmt.num(amount),
+                               color: crit ? .yellow : .white.opacity(fromTap ? 1 : 0.7), big: crit)
+                }
             case let .blockBroken(coins, ore):
                 if fromTap || floaters.count < 4 {
                     addFloater(text: "+\(Fmt.num(coins))", color: Color(hex: ore.color), big: ore.rarity == 2)

@@ -42,6 +42,8 @@ struct GameCore: Codable {
     var lifetimeCoins: Double = 0
     var playSeconds: Double = 0
     var coreReached: Bool = false
+    var achievements: Set<String> = []
+    var bossFailStreak: Int = 0
 
     // Settings
     var autoChallenge: Bool = true
@@ -72,6 +74,8 @@ struct GameCore: Codable {
         lifetimeCoins = try c.decodeIfPresent(Double.self, forKey: .lifetimeCoins) ?? d.lifetimeCoins
         playSeconds = try c.decodeIfPresent(Double.self, forKey: .playSeconds) ?? d.playSeconds
         coreReached = try c.decodeIfPresent(Bool.self, forKey: .coreReached) ?? d.coreReached
+        achievements = try c.decodeIfPresent(Set<String>.self, forKey: .achievements) ?? d.achievements
+        bossFailStreak = try c.decodeIfPresent(Int.self, forKey: .bossFailStreak) ?? d.bossFailStreak
         autoChallenge = try c.decodeIfPresent(Bool.self, forKey: .autoChallenge) ?? d.autoChallenge
         autoTapEnabled = try c.decodeIfPresent(Bool.self, forKey: .autoTapEnabled) ?? d.autoTapEnabled
         autoTapRate = try c.decodeIfPresent(Double.self, forKey: .autoTapRate) ?? d.autoTapRate
@@ -84,7 +88,24 @@ struct GameCore: Codable {
 
     func level(_ k: UpgradeKind) -> Int { levels[k.rawValue] ?? 0 }
     var relics: Int { deepestBossDefeated / Balance.layersPerBiome }
-    var globalMultiplier: Double { Balance.shardMultiplier(shards) * Balance.relicMultiplierTotal(relics) }
+    var achievementMultiplier: Double { 1 + Balance.achievementBonusEach * Double(achievements.count) }
+    var masteredOres: Int { oreCounts.values.filter { $0 >= Balance.masteryThreshold }.count }
+    var masteryMultiplier: Double { 1 + Balance.masteryBonusEach * Double(masteredOres) }
+    var globalMultiplier: Double {
+        Balance.shardMultiplier(shards) * Balance.relicMultiplierTotal(relics) * achievementMultiplier
+    }
+    var bossTimeLimit: Double {
+        Balance.bossTimeLimit + Balance.overclockSecondsPerLevel * Double(level(.overclock))
+    }
+    /// True when you keep losing to a boss and a prestige would help.
+    var shouldSuggestPrestige: Bool { bossFailStreak >= 2 && canPrestige }
+
+    /// Unlocks any achievements whose goal is now met. Returns the new ones.
+    mutating func checkAchievements() -> [Achievement] {
+        let fresh = Achievements.all.filter { !achievements.contains($0.id) && $0.isUnlocked(self) }
+        for a in fresh { achievements.insert(a.id) }
+        return fresh
+    }
     var tapDamage: Double { Balance.drillPower(level: level(.drill)) * globalMultiplier }
     var botDPS: Double { Balance.botDPS(level: level(.bots)) * globalMultiplier }
     var critChance: Double { Balance.critChance(level: level(.sharpBits)) }
@@ -101,6 +122,7 @@ struct GameCore: Codable {
     var blockValue: Double {
         Balance.oreValue(depth: depth, rarity: blockRarity)
             * Balance.refineryMultiplier(level: level(.refinery))
+            * masteryMultiplier
             * globalMultiplier
             * (isBossLayer ? Balance.bossRewardMultiplier : 1)
     }
@@ -158,6 +180,7 @@ struct GameCore: Codable {
         let gain = pendingShards
         guard gain > 0 else { return }
         shards += gain
+        bossFailStreak = 0
         prestigeCount += 1
         coins = 0
         levels = [:]
@@ -222,6 +245,7 @@ struct GameCore: Codable {
             let firstTime = depth > deepestBossDefeated
             if firstTime { deepestBossDefeated = depth }
             bossTimeLeft = nil
+            bossFailStreak = 0
             events.append(.bossDefeated(b, relicEarned: firstTime))
             if depth == Balance.finalDepth && !coreReached {
                 coreReached = true
@@ -254,7 +278,7 @@ struct GameCore: Codable {
         if biome.index != oldBiome { events.append(.enteredBiome(biome)) }
         spawnBlock()
         if isBossLayer {
-            bossTimeLeft = Balance.bossTimeLimit
+            bossTimeLeft = bossTimeLimit
             events.append(.bossStarted(biome))
         }
         return events
@@ -275,6 +299,7 @@ struct GameCore: Codable {
     private mutating func failBoss() -> [GameEvent] {
         let b = biome
         bossTimeLeft = nil
+        bossFailStreak += 1
         depth -= 1
         blocksBroken = 0
         spawnBlock()

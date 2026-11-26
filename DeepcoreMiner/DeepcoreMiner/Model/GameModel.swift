@@ -27,6 +27,7 @@ final class GameModel: ObservableObject {
     private var timer: Timer?
     private var saveCountdown = 0.0
     private var autoTapCarry = 0.0
+    private var achievementCountdown = 0.0
     private var autoPulseCount = 0
     private let saveKey = "deepcore.save.v1"
     private let haptics = Haptics()
@@ -82,6 +83,17 @@ final class GameModel: ObservableObject {
         }
     }
 
+    private func announce(_ fresh: [Achievement]) {
+        guard let first = fresh.first else { return }
+        let bonus = Int((Balance.achievementBonusEach * 100).rounded()) * fresh.count
+        if fresh.count == 1 {
+            showToast("Achievement: \(first.title)! +\(bonus)% forever", icon: "trophy.fill")
+        } else {
+            showToast("\(fresh.count) achievements unlocked! +\(bonus)% forever", icon: "trophy.fill")
+        }
+        haptics.success()
+    }
+
     func challengeBoss() {
         handle(core.challengeBoss(), fromTap: true)
     }
@@ -116,6 +128,11 @@ final class GameModel: ObservableObject {
         let events = core.tick(dt: tickInterval)
         if !events.isEmpty { handle(events, fromTap: false) }
         runAutoClicker()
+        achievementCountdown += tickInterval
+        if achievementCountdown >= 1 {
+            achievementCountdown = 0
+            announce(core.checkAchievements())
+        }
         saveCountdown += tickInterval
         if saveCountdown >= 15 {
             saveCountdown = 0
@@ -174,7 +191,7 @@ final class GameModel: ObservableObject {
             case let .enteredBiome(b):
                 showToast("Entered \(b.name)", icon: "map.fill")
             case let .bossStarted(b):
-                showToast("BOSS: \(b.boss)! Break it in 30s", icon: "exclamationmark.triangle.fill")
+                showToast("BOSS: \(b.boss)! Break it in \(Int(core.bossTimeLimit))s", icon: "exclamationmark.triangle.fill")
                 haptics.warning()
             case let .bossDefeated(b, relic):
                 showToast(relic ? "\(b.boss) defeated! Relic earned: x1.45 forever"

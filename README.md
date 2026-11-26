@@ -12,7 +12,10 @@ It is designed to take **about 2–3 months** to beat, and to work on a foldable
 - **Prestige** ("Surface & Smelt") from depth 50 on: reset your run for **Core Shards**, +5% damage and value each, permanently. Shards stack across every prestige.
 - **Offline**: bots keep digging at 75% speed for up to 16 hours while the app is closed.
 - **Auto Clicker**: taps for you at 1, 2, 5, 10 or 20 taps/sec while the game is open (toggle it on the mine or in Upgrades).
-- **Ore Codex**: collect all 36 ores.
+- **Ore Codex & Mastery**: collect all 36 ores; collect 1,000 of one to master it (+1% ore value each).
+- **Achievements**: 32 goals, each +2% damage and value forever.
+- **Boss Overclock**: upgrade that adds +2s to boss timers (up to +30s).
+- **Prestige hint**: after losing to a boss twice, the game suggests prestiging.
 - Past depth 300 the shaft keeps going (endless mode).
 
 ### Layouts
@@ -60,3 +63,17 @@ DeepcoreMiner/
     Support/  Haptics, number formatting
 tools/balance_sim.py
 ```
+
+---
+
+# Cubefire
+
+An original blocky, pixel-textured first-person arena shooter (SceneKit + SwiftUI), in `Cubefire/`.
+
+- **3 voxel arenas** (Crate Yard, Neon Temple, Sky Fortress) that unlock as you level up.
+- **Endless waves**: Grunts (shoot), Rushers (charge and melee), Brutes (burst fire), and the **Cube King** boss every 5th wave.
+- **5 weapons**: Blaster, Scatter Cannon, Pulse Rifle, Railgun (pierces), Cube Launcher (splash). Buy them, equip up to 3, and upgrade each to level 10.
+- **Progression**: XP and levels, coins, best wave per arena, headshots (x1.8 damage).
+- **Controls**: left side is a floating joystick; drag the right side to look; hold the fire button (drag it to aim while firing); jump, reload, and weapon buttons.
+
+Open `Cubefire/Cubefire.xcodeproj` and run it the same way as Deepcore Miner. Plays best in landscape or with the phone unfolded.

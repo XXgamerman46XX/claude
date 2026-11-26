@@ -15,7 +15,8 @@ enum Balance {
     static let hpGrowthBase = 1.165      // per-layer HP growth in biome 1
     static let hpGrowthPerBiome = 0.003  // growth gets steeper every biome
     static let bossHPMultiplier = 30.0
-    static let bossTimeLimit = 30.0      // seconds
+    static let bossTimeLimit = 30.0      // seconds, before Boss Overclock
+    static let overclockSecondsPerLevel = 2.0
     static let bossRewardMultiplier = 25.0
 
     // MARK: Ore value
@@ -35,6 +36,11 @@ enum Balance {
     static let shardExponent = 1.5
     static let shardBonusEach = 0.05     // +5% damage & value per shard
     static let relicMultiplier = 1.45    // x1.45 damage & value per first-time boss kill (permanent)
+
+    // MARK: Achievements & Ore Mastery
+    static let achievementBonusEach = 0.02  // +2% damage & value per achievement
+    static let masteryThreshold = 1_000     // ores of one kind to master it
+    static let masteryBonusEach = 0.01      // +1% ore value per mastered ore
 
     // MARK: Auto clicker (only runs while the app is open)
     static let autoTapRates: [Double] = [1, 2, 5, 10, 20]   // taps per second

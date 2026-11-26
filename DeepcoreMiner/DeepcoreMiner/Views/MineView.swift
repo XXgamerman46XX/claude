@@ -55,7 +55,7 @@ struct MineView: View {
 
                 VStack(spacing: 10) {
                     if core.isBossLayer {
-                        BossBar(name: biome.boss, timeLeft: core.bossTimeLeft ?? 0)
+                        BossBar(name: biome.boss, timeLeft: core.bossTimeLeft ?? 0, limit: core.bossTimeLimit)
                     } else {
                         LayerProgress(layer: core.layerInBiome, blocks: core.blocksBroken,
                                       bossNext: core.bossIsNext)
@@ -72,6 +72,16 @@ struct MineView: View {
                     HPBar(fraction: core.blockHPFraction, left: core.blockHPLeft,
                           color: core.isBossLayer ? .red : .green)
                     Spacer(minLength: 0)
+                    if core.shouldSuggestPrestige && !core.isBossLayer {
+                        Button {
+                            game.showPrestige = true
+                        } label: {
+                            Label("Stuck? Prestige for +\(core.pendingShards) shards", systemImage: "sparkles")
+                                .font(.subheadline.bold())
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.purple)
+                    }
                     if core.bossIsNext && !core.autoChallenge {
                         Button("Challenge \(biome.boss)") { game.challengeBoss() }
                             .buttonStyle(.borderedProminent)
@@ -278,6 +288,7 @@ struct LayerProgress: View {
 struct BossBar: View {
     let name: String
     let timeLeft: Double
+    let limit: Double
 
     var body: some View {
         VStack(spacing: 4) {
@@ -286,7 +297,7 @@ struct BossBar: View {
                 ZStack(alignment: .leading) {
                     Capsule().fill(Color.black.opacity(0.5))
                     Capsule().fill(Color.orange.gradient)
-                        .frame(width: g.size.width * max(0, timeLeft / Balance.bossTimeLimit))
+                        .frame(width: g.size.width * max(0, timeLeft / limit))
                 }
             }
             .frame(width: 180, height: 6)

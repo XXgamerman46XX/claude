@@ -173,6 +173,8 @@ struct StatsView: View {
                     statRow("Best depth", "\(core.bestDepthEver) / \(Balance.finalDepth)")
                     statRow("Core Shards", "\(core.shards)  (x\(Fmt.num(Balance.shardMultiplier(core.shards))))")
                     statRow("Relics", "\(core.relics)  (x\(Fmt.num(Balance.relicMultiplierTotal(core.relics))))")
+                    statRow("Achievements", "\(core.achievements.count)/\(Achievements.all.count)  (x\(Fmt.num(core.achievementMultiplier)))")
+                    statRow("Mastered ores", "\(core.masteredOres)/\(Biomes.allOres.count)  (x\(Fmt.num(core.masteryMultiplier)) value)")
                     statRow("Total multiplier", "x\(Fmt.num(core.globalMultiplier))")
                     statRow("Prestiges", "\(core.prestigeCount)")
                     statRow("Taps", "\(core.totalTaps)")
@@ -199,14 +201,17 @@ struct StatsView: View {
                 .disabled(!core.canPrestige)
 
                 Text("Ore Codex · \(core.oreCounts.count)/\(Biomes.allOres.count)").font(.headline)
+                Text("Collect \(Fmt.num(Double(Balance.masteryThreshold))) of an ore to master it: +1% ore value each.")
+                    .font(.caption).foregroundStyle(.secondary)
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 92), spacing: 6)], spacing: 6) {
                     ForEach(Biomes.allOres) { ore in
                         let count = core.oreCounts[ore.id] ?? 0
                         VStack(spacing: 2) {
-                            Image(systemName: "diamond.fill")
+                            Image(systemName: count >= Balance.masteryThreshold ? "star.circle.fill" : "diamond.fill")
                                 .foregroundStyle(count > 0 ? Color(hex: ore.color) : .gray.opacity(0.3))
                             Text(count > 0 ? ore.name : "???").font(.caption2.bold()).lineLimit(1)
-                            Text(count > 0 ? Fmt.num(Double(count)) : ore.rarityName)
+                            Text(count >= Balance.masteryThreshold ? "Mastered"
+                                 : (count > 0 ? "\(Fmt.num(Double(count)))/\(Fmt.num(Double(Balance.masteryThreshold)))" : ore.rarityName))
                                 .font(.caption2).foregroundStyle(.secondary)
                         }
                         .frame(maxWidth: .infinity)
@@ -214,6 +219,8 @@ struct StatsView: View {
                         .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 10))
                     }
                 }
+
+                AchievementsList(unlocked: core.achievements)
 
                 Button("Reset all progress", role: .destructive) { confirmReset = true }
                     .font(.caption)
@@ -314,5 +321,33 @@ struct OfflineView: View {
         }
         .padding(24)
         .presentationDetents([.medium])
+    }
+}
+
+struct AchievementsList: View {
+    let unlocked: Set<String>
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Achievements · \(unlocked.count)/\(Achievements.all.count)").font(.headline)
+            Text("Each one: +\(Int((Balance.achievementBonusEach * 100).rounded()))% damage & ore value, forever.")
+                .font(.caption).foregroundStyle(.secondary)
+            ForEach(Achievements.all) { a in
+                let done = unlocked.contains(a.id)
+                HStack(spacing: 10) {
+                    Image(systemName: done ? a.icon : "lock.fill")
+                        .frame(width: 28)
+                        .foregroundStyle(done ? Color.yellow : Color.gray)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(a.title).font(.subheadline.bold())
+                        Text(a.detail).font(.caption2).foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 0)
+                    if done { Image(systemName: "checkmark.circle.fill").foregroundStyle(.green) }
+                }
+                .padding(8)
+                .background(Color.white.opacity(done ? 0.10 : 0.04), in: RoundedRectangle(cornerRadius: 10))
+            }
+        }
     }
 }

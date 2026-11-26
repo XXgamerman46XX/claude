@@ -2,7 +2,7 @@
 """Pacing simulator for Deepcore Miner.
 
 Mirrors the formulas in DeepcoreMiner/DeepcoreMiner/Model/Balance.swift and plays a
-simple "greedy" player: taps 5x/sec for ACTIVE_MIN minutes per day, idles at 50%
+simple "greedy" player: taps 5x/sec for ACTIVE_MIN minutes per day, idles at 75%
 bot speed for 16 hours, always buys the cheapest upgrade, and prestiges when it has
 made no progress for 3 hours and would gain at least 5% more shards.
 
@@ -10,7 +10,7 @@ Usage:  python3 tools/balance_sim.py [key=value ...]
 e.g.    python3 tools/balance_sim.py g0=1.17 relic=1.4
 
 Prints each prestige and the day the Core (depth 300 boss) is beaten.
-Last tuned result: Core reached on ~day 63 with ~29 prestiges.
+Last tuned result: Core reached on ~day 62 with ~29 prestiges.
 If you change a number here, change it in Balance.swift too.
 """
 import functools
@@ -22,7 +22,7 @@ P = dict(
     drillCost=15, drillCG=1.10, botCost=50, botCG=1.11,
     refCost=200, refCG=1.22, refMult=1.12,
     shardPow=1.5, shardMult=0.05, relic=1.45,
-    activeMin=40, tps=5, stallHours=3, days=150,
+    activeMin=40, tps=5, stallHours=3, days=150, idleEff=0.75,
 )
 for arg in sys.argv[1:]:
     k, v = arg.split("=")
@@ -62,7 +62,7 @@ def run():
         while True:
             sec = t % 86400
             active = sec < P["activeMin"] * 60
-            eff = 1.0 if active else (0.5 if sec < P["activeMin"] * 60 + 16 * 3600 else 0.0)
+            eff = 1.0 if active else (P["idleEff"] if sec < P["activeMin"] * 60 + 16 * 3600 else 0.0)
             dps = bots(bo) * gm + (drill(dr) * gm * P["tps"] * CRIT_FACTOR if active else 0)
             ref = P["refMult"] ** rf
             if depth % 25 == 0 and dps * 30 < hp(depth):

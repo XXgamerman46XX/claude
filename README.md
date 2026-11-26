@@ -10,7 +10,7 @@ It is designed to take **about 2–3 months** to beat, and to work on a foldable
 - **Upgrade**: Drill Power (tap damage), Mining Bots (auto damage, also works offline), Ore Refinery (ore value), Sharp Bits (crit chance).
 - **Bosses** guard the end of every biome (every 25 layers). You get 30 seconds to break them. Beating a boss for the first time earns a **Relic**: x1.45 damage and value, permanently.
 - **Prestige** ("Surface & Smelt") from depth 50 on: reset your run for **Core Shards**, +5% damage and value each, permanently. Shards stack across every prestige.
-- **Offline**: bots keep digging at 50% speed for up to 12 hours while the app is closed.
+- **Offline**: bots keep digging at 75% speed for up to 16 hours while the app is closed.
 - **Ore Codex**: collect all 36 ores.
 - Past depth 300 the shaft keeps going (endless mode).
 
@@ -41,7 +41,7 @@ All pacing numbers live in `DeepcoreMiner/DeepcoreMiner/Model/Balance.swift`.
 `tools/balance_sim.py` simulates a player tapping 40 minutes a day and idling the rest:
 
 ```
-python3 tools/balance_sim.py             # current tuning: Core on ~day 63
+python3 tools/balance_sim.py             # current tuning: Core on ~day 62
 python3 tools/balance_sim.py g0=1.17     # steeper HP growth → longer game
 ```
 

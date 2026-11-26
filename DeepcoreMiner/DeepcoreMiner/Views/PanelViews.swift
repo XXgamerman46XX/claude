@@ -269,7 +269,7 @@ struct OfflineView: View {
                     Text("Depth \(report.depthFrom) → \(report.depthTo)")
                 }
             }
-            Text("Bots work at 50% speed while you're away, for up to 12 hours.")
+            Text("Bots work at 75% speed while you're away, for up to 16 hours.")
                 .font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
             Button("Collect") { game.offlineReport = nil }
                 .buttonStyle(.borderedProminent)

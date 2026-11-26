@@ -37,8 +37,8 @@ enum Balance {
     static let relicMultiplier = 1.45    // x1.45 damage & value per first-time boss kill (permanent)
 
     // MARK: Offline
-    static let offlineCapSeconds: Double = 12 * 3600
-    static let offlineEfficiency = 0.5
+    static let offlineCapSeconds: Double = 16 * 3600
+    static let offlineEfficiency = 0.75
 
     // MARK: Formulas
     private static let tableSize = 1500
